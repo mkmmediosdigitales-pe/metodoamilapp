@@ -13,6 +13,12 @@
     @media(max-width:600px){.shell{padding:14px}.topbar{align-items:flex-start}.brand img{width:72px;height:52px}.step{display:none}.panel{border-radius:20px}.form-panel,.card,.hero-result{padding:19px}.two,.quad{grid-template-columns:1fr}.hero-top{display:block}.goal{margin-top:10px}.empty{padding:24px}.actions .secondary{flex:1}.idea-head{align-items:flex-start}}
     @media print{body{background:#fff}.shell{max-width:none;padding:0}.topbar,.form-panel,.actions,.footer{display:none!important}.layout{display:block}.output{display:grid!important}.panel{box-shadow:none;break-inside:avoid}.hero-result{print-color-adjust:exact;-webkit-print-color-adjust:exact}.cards{grid-template-columns:1fr 1fr}}
   </style>
+  <style>
+    /* Logotipo independiente de archivos externos: evita imágenes rotas. */
+    .brand img{display:none!important}
+    .brand::before{content:"🚀\A Método a Mil";white-space:pre;display:flex;flex-direction:column;align-items:center;justify-content:center;width:112px;height:72px;flex:0 0 112px;border:1px solid #f0e7e2;border-radius:14px;background:linear-gradient(145deg,#fff 35%,#fff1eb);color:#111;font-family:Georgia,serif;font-size:1.05rem;font-weight:800;line-height:1.1;text-align:center;box-shadow:0 7px 20px rgba(255,75,11,.09)}
+    @media(max-width:600px){.brand::before{width:88px;height:64px;flex-basis:88px;font-size:.88rem}.brand{gap:10px}.brand-copy strong{font-size:1.12rem}.brand-copy span{font-size:.68rem}}
+  </style>
 </head>
 <body>
   <main class="shell">
