@@ -34,7 +34,7 @@
         <form id="strategy-form" class="form-grid" novalidate>
           <div><label for="business">¿Qué negocio tienes?</label><input class="input" id="business" required placeholder="Ej. tienda de ropa femenina"></div>
           <div><label for="offer">¿Qué vendes exactamente?</label><textarea class="input" id="offer" required placeholder="Productos o servicios, características y precios aproximados"></textarea></div>
-          <div><label for="problem">¿Qué problema ayudas a resolver?</label><textarea class="input" id="problem" required placeholder="Ej. ayudo a mujeres a vestirse con estilo sin gastar de más"></textarea></div>
+          <div><label for="problem">¿Qué resultado quiere conseguir tu cliente?</label><textarea class="input" id="problem" required placeholder="Ej. generar ingresos adicionales de forma virtual"></textarea><div class="field-help">Escríbelo empezando con un verbo: vender más, ahorrar tiempo, vestirse con estilo…</div></div>
           <div class="two">
             <div><label for="location">¿Dónde vendes?</label><input class="input" id="location" required placeholder="Ej. Lima / todo Perú"></div>
             <div><label for="price">Ticket promedio <span class="optional">(opcional)</span></label><input class="input" id="price" placeholder="Ej. S/120"></div>
@@ -79,28 +79,43 @@
     const audienceBy={familias:"Madres y padres con poco tiempo que priorizan seguridad, practicidad y confianza. Comparan antes de comprar y valoran recomendaciones de personas parecidas a ellos.",estilo:"Mujeres que quieren verse y sentirse bien sin equivocarse en su compra. Buscan una opción coherente con su estilo, presupuesto y vida cotidiana.",servicios:"Emprendedores que quieren avanzar con claridad, reducir la prueba y error y obtener una ruta aplicable sin sentirse abrumados por tanta información.",bienestar:"Personas que desean sentirse mejor y construir hábitos sostenibles. Necesitan entender qué esperar, cómo usar la solución y por qué confiar en ella.",alimentos:"Personas que buscan una experiencia rica, conveniente y confiable. Deciden mucho por lo visual, la recomendación y la facilidad de compra.",general:"Personas que ya reconocen la necesidad, comparan alternativas y quieren elegir una solución confiable, clara y conveniente."};
     const ctas={"Vender más":"Escríbeme “QUIERO” y te ayudo a elegir la opción ideal para ti.","Atraer seguidores ideales":"Sígueme si quieres más ideas prácticas para conseguir este resultado sin complicarte.","Generar mensajes y leads":"Comenta “GUÍA” y te envío el siguiente paso por mensaje.","Posicionarme como experta/o":"Guarda este contenido: te servirá cuando tengas que tomar esta decisión.","Crear comunidad":"¿Te ha pasado algo parecido? Cuéntamelo en comentarios; quiero leerte."};
     function data(){return{business:clean($("business").value),offer:clean($("offer").value),problem:clean($("problem").value),location:clean($("location").value),price:clean($("price").value),buyers:clean($("buyers").value),difference:clean($("difference").value),goal:$("goal").value,tone:$("tone").value}}
+    function normalizeOutcome(value){
+      let text=clean(value).replace(/[.!?]+$/g,"").trim();
+      text=text.replace(/^(?:yo\s+|nosotros\s+|mi\s+negocio\s+)?(?:ayudo|ayudamos|ayuda|ayudan)\s+a\s+/i,"");
+      text=text.replace(/^(?:las?\s+|los\s+)?(?:personas|mujeres|hombres|mam[aá]s|padres|emprendedores|clientes|negocios|empresas)\s+a\s+/i,"");
+      text=text.replace(/^(?:las?\s+|los\s+)?(?:personas|mujeres|hombres|mam[aá]s|padres|emprendedores|clientes|negocios|empresas)\s+que\s+(?:quieren|buscan|necesitan|desean)\s+/i,"");
+      text=text.replace(/^quienes\s+(?:quieren|buscan|necesitan|desean)\s+/i,"");
+      text=text.replace(/^que\s+(?:quieren|buscan|necesitan|desean)\s+/i,"");
+      text=text.replace(/^a\s+(?=[a-záéíóúñ]+(?:ar|er|ir)\b)/i,"");
+      return text.charAt(0).toLowerCase()+text.slice(1);
+    }
+    function normalizeOffer(value){return clean(value).replace(/[.!?]+$/g,"").replace(/^(?:yo\s+|nosotros\s+)?(?:vendo|vendemos|ofrezco|ofrecemos|brindo|brindamos)\s+/i,"").trim().toLowerCase()}
+    function normalizeBusiness(value){return clean(value).replace(/[.!?]+$/g,"").replace(/^(?:yo\s+)?tengo\s+(?:un|una)\s+(?:negocio|empresa|tienda|marca)\s+de\s+/i,"").replace(/^mi\s+(?:negocio|empresa|tienda|marca)\s+(?:es|se llama)\s+/i,"").trim()}
+    function normalizeDifferential(value){return clean(value).replace(/[.!?]+$/g,"").replace(/^(?:porque\s+|nos\s+eligen\s+por\s+|me\s+eligen\s+por\s+|(?:yo\s+)?(?:tengo|tenemos|ofrezco|ofrecemos|brindo|brindamos)\s+)/i,"").trim().toLowerCase()}
     function create(d){
-      const cat=category(`${d.business} ${d.offer} ${d.problem}`),aud=d.buyers||audienceBy[cat];
-      const avatar=`La persona que quiere ${d.problem.toLowerCase()}, pero necesita sentir seguridad antes de decidir`;
+      const outcome=normalizeOutcome(d.problem);
+      const businessName=normalizeBusiness(d.business),offerName=normalizeOffer(d.offer),differential=normalizeDifferential(d.difference);
+      const cat=category(`${businessName} ${offerName} ${outcome}`),aud=d.buyers||audienceBy[cat];
+      const avatar=`La persona que quiere ${outcome}, pero necesita sentir seguridad antes de decidir`;
       const profile=`${aud} Compra en ${d.location}${d.price?` y evalúa si el valor percibido justifica un ticket cercano a ${d.price}`:""}. Responde mejor a una comunicación ${d.tone.toLowerCase()} que le demuestra que la marca entiende su realidad.`;
       const moment=`Está más receptiva cuando el problema se hace evidente, descubre una alternativa más sencilla o ve a alguien parecido obteniendo el resultado que desea. Antes de decidir busca señales de confianza, claridad y bajo riesgo.`;
-      const pains=[d.problem,"Perder tiempo o dinero tomando una mala decisión.","Sentirse saturada de opciones y no saber cuál le conviene.","No encontrar una solución que encaje realmente con su contexto."];
-      const desires=["Conseguir el resultado de forma más simple y segura.","Sentir que hizo una compra inteligente.","Ser atendida por una marca que comprende lo que necesita.",`Obtener una solución respaldada por ${d.difference.toLowerCase()}.`];
+      const pains=[`No conseguir ${outcome} a pesar de sus esfuerzos.`,"Perder tiempo o dinero tomando una mala decisión.","Sentirse saturada de opciones y no saber cuál le conviene.","No encontrar una solución que encaje realmente con su contexto."];
+      const desires=["Conseguir el resultado de forma más simple y segura.","Sentir que hizo una compra inteligente.","Ser atendida por una marca que comprende lo que necesita.",`Obtener una solución respaldada por ${differential}.`];
       const fears=["Pagar y que la experiencia no cumpla la promesa.","Equivocarse de opción y arrepentirse después.","Que el producto o servicio no sea para alguien como ella."];
       const objections=[`“¿Realmente vale${d.price?` ${d.price}`:" lo que cuesta"}?”`,"“¿Cómo sé que sí funcionará para mí?”","“¿Qué diferencia hay frente a otras opciones?”","“Quizá puedo resolverlo después o por mi cuenta.”"];
       const triggers=["Identificación","Prueba social","Especificidad","Autoridad","Contraste","Demostración","Reciprocidad"];
-      const hooks=[`Si quieres ${d.problem.toLowerCase()}, esto es lo primero que debes dejar de hacer.`,`Antes de invertir en ${d.offer.toLowerCase()}, revisa estas 3 cosas.`,`El error que muchas personas cometen cuando buscan ${d.problem.toLowerCase()}.`,`No necesitas más opciones; necesitas saber cuál realmente te conviene.`,`Lo que nadie te explica sobre ${d.business.toLowerCase()} hasta que ya gastaste dinero.`,`Si te pasa esto, quizá no necesitas esforzarte más: necesitas una solución diferente.`,`¿Por qué algunas personas consiguen este resultado y otras siguen estancadas?`,`La diferencia entre comprar por precio y comprar con criterio.`];
+      const hooks=[`Si quieres ${outcome}, esto es lo primero que debes dejar de hacer.`,`Antes de invertir en ${offerName}, revisa estas 3 cosas.`,`El error que muchas personas cometen cuando intentan ${outcome}.`,`No necesitas más opciones; necesitas saber cuál realmente te conviene.`,`Lo que nadie te explica sobre ${businessName.toLowerCase()} hasta que ya gastaste dinero.`,`Si te cuesta ${outcome}, quizá no necesitas esforzarte más: necesitas una estrategia diferente.`,`¿Por qué algunas personas consiguen este resultado y otras siguen estancadas?`,`La diferencia entre comprar por precio y comprar con criterio.`];
       const ideas=[
-        ["Dolor → descubrimiento","REEL",`Abre con una escena cotidiana donde aparezca “${d.problem}”. Explica por qué sucede, rompe una creencia y muestra una alternativa práctica.`,`Dolor + curiosidad + alivio`],
-        ["Antes de comprar","CARRUSEL",`“5 cosas que revisaría antes de elegir ${d.offer}”. Usa cada diapositiva para despejar una duda real.`,`Autoridad + especificidad`],
+        ["Dolor → descubrimiento","REEL",`Abre con una situación cotidiana en la que al cliente le cuesta ${outcome}. Explica por qué sucede, rompe una creencia y muestra una alternativa práctica.`,`Dolor + curiosidad + alivio`],
+        ["Antes de comprar","CARRUSEL",`“5 cosas que revisaría antes de elegir ${offerName}”. Usa cada diapositiva para despejar una duda real.`,`Autoridad + especificidad`],
         ["Yo también pensaba eso","REEL",`Toma la objeción “no sé si esto es para mí” y cuenta: creencia inicial → descubrimiento → nueva mirada → solución.`,`Identificación + contraste`],
-        ["Comparación honesta","REEL",`Compara dos formas de ${d.problem.toLowerCase()} y explica para quién conviene cada una sin atacar a competidores.`,`Contraste + transparencia`],
+        ["Comparación honesta","REEL",`Compara dos caminos para ${outcome} y explica para quién conviene cada uno sin atacar a competidores.`,`Contraste + transparencia`],
         ["Caso real","REEL / HISTORIA",`Cuenta el punto de partida de un cliente, qué necesitaba, qué eligió y qué cambió. Usa solo evidencia verdadera.`,`Prueba social + similitud`],
-        ["Detrás de la decisión","REEL",`Explica por qué en ${d.business} trabajan con ${d.difference.toLowerCase()} y tradúcelo a un beneficio concreto.`,`Autoridad + confianza`],
-        ["Checklist guardable","CARRUSEL",`“Guarda esto antes de elegir ${d.offer}”. Incluye errores, señales positivas y preguntas clave.`,`Utilidad + reciprocidad`],
-        ["Venta sin vender","REEL",`Muestra ${d.offer} dentro de una situación real resolviendo el problema. Empieza con la vida del cliente, no con el producto.`,`Demostración + identificación`]
+        ["Detrás de la decisión","REEL",`Explica cómo ${businessName} aplica ${differential} y tradúcelo a un beneficio concreto para el cliente.`,`Autoridad + confianza`],
+        ["Checklist guardable","CARRUSEL",`“Guarda esto antes de elegir ${offerName}”. Incluye errores, señales positivas y preguntas clave.`,`Utilidad + reciprocidad`],
+        ["Venta sin vender","REEL",`Muestra ${offerName} dentro de una situación real en la que ayuda al cliente a ${outcome}. Empieza con la vida del cliente, no con el producto.`,`Demostración + identificación`]
       ];
-      const message=`En ${d.business} ayudamos a personas que quieren ${d.problem.toLowerCase()} mediante ${d.offer.toLowerCase()}, con ${d.difference.toLowerCase()}. No vendemos solo una opción: damos claridad para elegir con confianza.`;
+      const message=`${businessName} ayuda a sus clientes a ${outcome} mediante ${offerName}. Su principal diferencial es ${differential}. Más que ofrecer una opción, les da claridad para elegir con confianza.`;
       $("avatar-title").textContent=avatar;$("avatar-summary").textContent=`Un perfil construido para el objetivo: ${d.goal.toLowerCase()}.`;$("goal-badge").textContent=d.goal;$("profile").textContent=profile;$("buying-moment").textContent=moment;$("brand-message").innerHTML=`<strong>MENSAJE CENTRAL</strong><p>${esc(message)}</p>`;$("cta").innerHTML=`<strong>CTA RECOMENDADO</strong><p>${esc(ctas[d.goal])}</p>`;
       bullets("pains",pains);bullets("desires",desires);bullets("fears",fears);bullets("objections",objections);
       $("triggers").innerHTML=triggers.map(x=>`<span class="tag">${x}</span>`).join("");
